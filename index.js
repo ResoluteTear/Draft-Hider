@@ -3,7 +3,7 @@ import { extension_settings, getContext, loadExtensionSettings } from "../../../
 import { saveSettingsDebounced, saveChatConditional, eventSource, event_types } from "../../../../script.js";
 
 // Extension name MUST match folder name
-const extensionName = "hide-last-message";
+const extensionName = "draft-hider";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 
 // Default settings
