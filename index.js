@@ -11,7 +11,8 @@ const defaultSettings = {
     showHideBtn: true,
     showUnhideBtn: true,
     showHideAllUserBtn: true,
-    showUnhideAllUserBtn: true
+    showUnhideAllUserBtn: true,
+    compactMode: false
 };
 
 // Track the last hidden message for undo functionality
@@ -56,6 +57,17 @@ function updateHiddenCounter() {
     }
 }
 
+// Update compact mode
+function updateCompactMode() {
+    const isCompact = extension_settings[extensionName].compactMode;
+    if (isCompact) {
+        $("body").addClass("draft-hider-compact");
+    } else {
+        $("body").removeClass("draft-hider-compact");
+    }
+    console.log(`[${extensionName}] Compact mode: ${isCompact}`);
+}
+
 // Load settings from storage
 function loadSettings() {
     extension_settings[extensionName] = extension_settings[extensionName] || {};
@@ -75,9 +87,13 @@ function loadSettings() {
     $("#hlm_show_unhide_btn").prop("checked", extension_settings[extensionName].showUnhideBtn);
     $("#hlm_show_hide_all_user_btn").prop("checked", extension_settings[extensionName].showHideAllUserBtn);
     $("#hlm_show_unhide_all_user_btn").prop("checked", extension_settings[extensionName].showUnhideAllUserBtn);
+    $("#hlm_compact_mode").prop("checked", extension_settings[extensionName].compactMode);
 
     // Update button visibility
     updateButtonVisibility();
+
+    // Update compact mode
+    updateCompactMode();
 
     // Update counter
     updateHiddenCounter();
@@ -103,7 +119,8 @@ function onSettingChange(event) {
         "hlm_show_hide_btn": "showHideBtn",
         "hlm_show_unhide_btn": "showUnhideBtn",
         "hlm_show_hide_all_user_btn": "showHideAllUserBtn",
-        "hlm_show_unhide_all_user_btn": "showUnhideAllUserBtn"
+        "hlm_show_unhide_all_user_btn": "showUnhideAllUserBtn",
+        "hlm_compact_mode": "compactMode"
     };
 
     const key = settingMap[target.attr("id")];
@@ -111,7 +128,13 @@ function onSettingChange(event) {
         const value = Boolean(target.prop("checked"));
         extension_settings[extensionName][key] = value;
         saveSettingsDebounced();
-        updateButtonVisibility();
+
+        if (key === "compactMode") {
+            updateCompactMode();
+        } else {
+            updateButtonVisibility();
+        }
+
         console.log(`[${extensionName}] Setting saved: ${key} = ${value}`);
     }
 }
@@ -124,7 +147,7 @@ function onHideLastMessageClick() {
         const visibleUserMessages = getVisibleUserMessages();
 
         if (visibleUserMessages.length === 0) {
-            toastr.warning("No visible user messages found.", "Hide Last Message");
+            toastr.warning("No visible user messages found.", "Draft Hider");
             return;
         }
 
@@ -136,13 +159,13 @@ function onHideLastMessageClick() {
             hideButton.trigger("click");
             lastHiddenMessageId = messageId;
             updateHiddenCounter();
-            toastr.success("Message hidden!", "Hide Last Message");
+            toastr.success("Message hidden!", "Draft Hider");
             console.log(`[${extensionName}] ✅ Message ${messageId} hidden`);
         } else {
-            toastr.error("Could not find hide button.", "Hide Last Message");
+            toastr.error("Could not find hide button.", "Draft Hider");
         }
     } catch (error) {
-        toastr.error("Error: " + error.message, "Hide Last Message");
+        toastr.error("Error: " + error.message, "Draft Hider");
         console.error(`[${extensionName}] ❌ Error:`, error);
     }
 }
@@ -155,7 +178,7 @@ function onUnhideLastMessageClick() {
         const hiddenUserMessages = getHiddenUserMessages();
 
         if (hiddenUserMessages.length === 0) {
-            toastr.warning("No hidden user messages to restore.", "Hide Last Message");
+            toastr.warning("No hidden user messages to restore.", "Draft Hider");
             return;
         }
 
@@ -174,14 +197,14 @@ function onUnhideLastMessageClick() {
         if (unhideButton.length > 0) {
             unhideButton.trigger("click");
             updateHiddenCounter();
-            toastr.success("Message restored!", "Hide Last Message");
+            toastr.success("Message restored!", "Draft Hider");
             console.log(`[${extensionName}] ✅ Message restored`);
             lastHiddenMessageId = null;
         } else {
-            toastr.error("Could not find unhide button.", "Hide Last Message");
+            toastr.error("Could not find unhide button.", "Draft Hider");
         }
     } catch (error) {
-        toastr.error("Error: " + error.message, "Hide Last Message");
+        toastr.error("Error: " + error.message, "Draft Hider");
         console.error(`[${extensionName}] ❌ Error:`, error);
     }
 }
@@ -195,7 +218,7 @@ function onHideAllUserMessagesClick() {
         const chat = context.chat;
 
         if (!chat || chat.length === 0) {
-            toastr.warning("No chat messages found.", "Hide Last Message");
+            toastr.warning("No chat messages found.", "Draft Hider");
             return;
         }
 
@@ -210,7 +233,7 @@ function onHideAllUserMessagesClick() {
         }
 
         if (hiddenCount === 0) {
-            toastr.warning("No visible user messages found.", "Hide Last Message");
+            toastr.warning("No visible user messages found.", "Draft Hider");
             return;
         }
 
@@ -218,10 +241,10 @@ function onHideAllUserMessagesClick() {
         $("#chat .mes[is_user='true'][is_system='false']").attr("is_system", "true");
         updateHiddenCounter();
 
-        toastr.success(`${hiddenCount} user message(s) hidden!`, "Hide Last Message");
+        toastr.success(`${hiddenCount} user message(s) hidden!`, "Draft Hider");
         console.log(`[${extensionName}] ✅ ${hiddenCount} user messages hidden`);
     } catch (error) {
-        toastr.error("Error: " + error.message, "Hide Last Message");
+        toastr.error("Error: " + error.message, "Draft Hider");
         console.error(`[${extensionName}] ❌ Error:`, error);
     }
 }
@@ -235,7 +258,7 @@ function onUnhideAllUserMessagesClick() {
         const chat = context.chat;
 
         if (!chat || chat.length === 0) {
-            toastr.warning("No chat messages found.", "Hide Last Message");
+            toastr.warning("No chat messages found.", "Draft Hider");
             return;
         }
 
@@ -250,7 +273,7 @@ function onUnhideAllUserMessagesClick() {
         }
 
         if (unhiddenCount === 0) {
-            toastr.warning("No hidden user messages found.", "Hide Last Message");
+            toastr.warning("No hidden user messages found.", "Draft Hider");
             return;
         }
 
@@ -258,10 +281,10 @@ function onUnhideAllUserMessagesClick() {
         $("#chat .mes[is_user='true'][is_system='true']").attr("is_system", "false");
         updateHiddenCounter();
 
-        toastr.success(`${unhiddenCount} user message(s) restored!`, "Hide Last Message");
+        toastr.success(`${unhiddenCount} user message(s) restored!`, "Draft Hider");
         console.log(`[${extensionName}] ✅ ${unhiddenCount} user messages restored`);
     } catch (error) {
-        toastr.error("Error: " + error.message, "Hide Last Message");
+        toastr.error("Error: " + error.message, "Draft Hider");
         console.error(`[${extensionName}] ❌ Error:`, error);
     }
 }
@@ -291,7 +314,7 @@ jQuery(async () => {
             console.log(`[${extensionName}] Buttons added to #leftSendForm`);
         } else {
             console.error(`[${extensionName}] Could not find #leftSendForm`);
-            toastr.error("Could not find chatbox area for buttons.", "Hide Last Message");
+            toastr.error("Could not find chatbox area for buttons.", "Draft Hider");
             return;
         }
 
@@ -302,7 +325,7 @@ jQuery(async () => {
         $("#unhide_all_user_msg_btn").on("click", onUnhideAllUserMessagesClick);
 
         // Bind settings checkbox events
-        $("#hlm_show_hide_btn, #hlm_show_unhide_btn, #hlm_show_hide_all_user_btn, #hlm_show_unhide_all_user_btn").on("change", onSettingChange);
+        $("#hlm_show_hide_btn, #hlm_show_unhide_btn, #hlm_show_hide_all_user_btn, #hlm_show_unhide_all_user_btn, #hlm_compact_mode").on("change", onSettingChange);
 
         // Subscribe to chat changed event to update counter
         eventSource.on(event_types.CHAT_CHANGED, () => {

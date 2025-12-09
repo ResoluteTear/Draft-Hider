@@ -1,22 +1,26 @@
 /* Draft Hider - Button Styles */
 
+/* Default spacing (for standard ST theme - wider) */
 #hide_last_msg_btn,
 #unhide_last_msg_btn,
 #hide_all_user_msg_btn,
 #unhide_all_user_msg_btn {
+    padding: 2px 4px !important;
+    margin: 0 2px !important;
+}
+
+/* Compact mode spacing (for Moonlit-Echoes - tight like original) */
+body.draft-hider-compact #hide_last_msg_btn,
+body.draft-hider-compact #unhide_last_msg_btn,
+body.draft-hider-compact #hide_all_user_msg_btn,
+body.draft-hider-compact #unhide_all_user_msg_btn {
     padding: 1px !important;
     margin: 0 -2px !important;
 }
 
-#unhide_last_msg_btn {
-    margin-left: -4px !important;
-}
-
-#hide_all_user_msg_btn {
-    margin-left: -4px !important;
-}
-
-#unhide_all_user_msg_btn {
+body.draft-hider-compact #unhide_last_msg_btn,
+body.draft-hider-compact #hide_all_user_msg_btn,
+body.draft-hider-compact #unhide_all_user_msg_btn {
     margin-left: -4px !important;
 }
 
